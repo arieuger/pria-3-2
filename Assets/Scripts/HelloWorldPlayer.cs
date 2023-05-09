@@ -24,6 +24,9 @@ namespace HelloWorld {
         }
 
         public void Move(Vector3 direction) {
+            
+            if (!IsOwner) return;
+
             if (NetworkManager.Singleton.IsServer) {
                 transform.position += direction;
                 Position.Value = transform.position;
@@ -48,10 +51,10 @@ namespace HelloWorld {
 
         void Update() {
 
-            if (Input.GetKeyDown(KeyCode.W) && IsOwner) Move(Vector3.forward);
-            if (Input.GetKeyDown(KeyCode.S) && IsOwner) Move(Vector3.back);
-            if (Input.GetKeyDown(KeyCode.A) && IsOwner) Move(Vector3.left);
-            if (Input.GetKeyDown(KeyCode.D) && IsOwner) Move(Vector3.right);
+            if (Input.GetKeyDown(KeyCode.W)) Move(Vector3.forward);
+            if (Input.GetKeyDown(KeyCode.S)) Move(Vector3.back);
+            if (Input.GetKeyDown(KeyCode.A)) Move(Vector3.left);
+            if (Input.GetKeyDown(KeyCode.D)) Move(Vector3.right);
 
             transform.position = Position.Value;
         }
