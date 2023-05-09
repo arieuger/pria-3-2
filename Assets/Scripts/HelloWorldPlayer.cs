@@ -3,28 +3,43 @@ using UnityEngine;
 
 namespace HelloWorld {
     public class HelloWorldPlayer : NetworkBehaviour {
+
         public NetworkVariable<Vector3> Position = new NetworkVariable<Vector3>();
 
         public override void OnNetworkSpawn() {
             if (IsOwner) {
-                Move();
+                RandomMove();
             }
         }
 
-        public void Move() {
+        public void RandomMove() {
             if (NetworkManager.Singleton.IsServer) {
                 var randomPosition = GetRandomPositionOnPlane();
                 transform.position = randomPosition;
                 Position.Value = randomPosition;
             }
             else {
-                SubmitPositionRequestServerRpc();
+                SubmitRandomPositionRequestServerRpc();
+            }
+        }
+
+        public void Move(Vector3 direction) {
+            if (NetworkManager.Singleton.IsServer) {
+                transform.position += direction;
+                Position.Value = transform.position;
+            } else {
+                MoveServerRpc(direction);
             }
         }
 
         [ServerRpc]
-        void SubmitPositionRequestServerRpc(ServerRpcParams rpcParams = default) {
+        void SubmitRandomPositionRequestServerRpc(ServerRpcParams rpcParams = default) {
             Position.Value = GetRandomPositionOnPlane();
+        }
+
+        [ServerRpc]
+        void MoveServerRpc(Vector3 direction, ServerRpcParams rpcParams = default) {
+            Position.Value += direction;
         }
 
         static Vector3 GetRandomPositionOnPlane() {
@@ -32,6 +47,12 @@ namespace HelloWorld {
         }
 
         void Update() {
+
+            if (Input.GetKeyDown(KeyCode.W) && IsOwner) Move(Vector3.forward);
+            if (Input.GetKeyDown(KeyCode.S) && IsOwner) Move(Vector3.back);
+            if (Input.GetKeyDown(KeyCode.A) && IsOwner) Move(Vector3.left);
+            if (Input.GetKeyDown(KeyCode.D) && IsOwner) Move(Vector3.right);
+
             transform.position = Position.Value;
         }
     }
